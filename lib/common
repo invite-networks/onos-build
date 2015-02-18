@@ -21,7 +21,7 @@ function exit_clean {
   return_ifs
 
   # Clean up the chroot enviroment if needed
-  if [[ ! -z ${CHROOT_CLEANUP} ]]; then 
+  if [[ ${CHROOT_CLEANUP} == 1 ]]; then
     load_source "${BASE_DIR}/lib/chroot_clean"
 
   fi
@@ -109,7 +109,14 @@ function run_chroot_command {
   local cmd=$2
   local description=$3
 
-  chroot ${chroot} /bin/dash -c "${cmd}" 
+  chroot ${chroot} /usr/bin/env \
+    HOME="/root" \
+    DEBIAN_FRONTEND="noninteractive" \
+    DEBCONF_NONINTERACTIVE_SEEN="true" \
+    LC_ALL="C" \
+    LANGUAGE="C" \
+    LANG="C" \
+    /bin/dash -c "${cmd}" 
   local retval=$?
 
   if [[ -z ${description} ]]; then

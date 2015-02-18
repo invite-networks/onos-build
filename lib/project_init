@@ -36,11 +36,12 @@ if [ ! -d ${IMPORT_DIR} ]; then
 fi
 
 # Create the Filesystem if needed 
-if [ ! -d "${CACHE_DIR}/chroot" ]; then
+if [ ! -d "${CACHE_DIR}/chroot/etc" ]; then
 
   pushd "${CACHE_DIR}" &>/dev/null
 
   echo "Bulilding minimal filesystem.  This may take some time for '${BUILD_NAME}'"
+  run_command "rm -rf chroot"
   run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building miniaml Filesystem"
 
   popd &>/dev/null

@@ -5,17 +5,20 @@
 
 pushd ${BUILD_DIR} &>/dev/null
 
-chroot ${CHROOT_DIR} dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${ISO_DIR}/install/filesystem.manifest
+chroot ${CHROOT_DIR} dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${ISO_DIR}/live/filesystem.manifest
+
+# Include the install scripts in the ISO
+
 
 # Delete the old filesystem if it exists 
-if [[ -f ${ISO_DIR}/install/filesystem.squashfs ]]; then
+if [[ -f ${ISO_DIR}/live/filesystem.squashfs ]]; then
 
-  run_command "${ISO_DIR}/install/filesystem.squashfs"
+  run_command "rm -f ${ISO_DIR}/live/filesystem.squashfs"
 
 fi
 
 run_command "mksquashfs 'chroot' iso/live/filesystem.squashfs -b 1048576"
-run_command "printf $(du -sx --block-size=1 'chroot' | cut -f1) | tee iso/live/filesystem.size && echo ''" "Create filesystem info ${ISO_DIR}/install/filesystem.size"
+run_command "printf $(du -sx --block-size=1 'chroot' | cut -f1) | tee iso/live/filesystem.size && echo ''" "Create filesystem info ${ISO_DIR}/live/filesystem.size"
 
 pushd ${ISO_DIR} &>/dev/null
 
