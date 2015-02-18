@@ -1,4 +1,4 @@
 #
 # This file contains the global settings to used in your build enviroment
 #
-GPG_KEY='B6AD99D6'
+#GPG_KEY=''
