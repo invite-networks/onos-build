@@ -4,7 +4,7 @@
 #
 
 # Update all of the submodules
-pushd "${CACHE_DIR}" &>/dev/null
+pushd "${PROJECT_DIR}" &>/dev/null
 
 run_command "git submodule init"
 run_command "git submodule update"
