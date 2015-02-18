@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# This is the clean up the chroot enviroment 
+#
+
+echo "Cleaning up chroot enviroment"
+
+pushd {$BUILD_DIR} &> /dev/null 
+
+run_chroot_command ${CHROOT_DIR} "rm -rf /packages"
+run_chroot_command ${CHROOT_DIR} "rm -f /usr/sbin/policy-rc.d"
+run_chroot_command ${CHROOT_DIR} "cat /dev/null > /etc/resolv.conf"
+run_chroot_command ${CHROOT_DIR} "apt-get -y autoremove"
+run_chroot_command ${CHROOT_DIR} "apt-get -y autoclean"
+run_chroot_command ${CHROOT_DIR} "apt-get -y clean"
+run_chroot_command ${CHROOT_DIR} "rm /sbin/initctl"
+run_chroot_command ${CHROOT_DIR} "dpkg-divert --rename --remove /sbin/initctl"
+run_chroot_command ${CHROOT_DIR} "umount /proc"
+run_chroot_command ${CHROOT_DIR} "umount /sys"
+run_chroot_command ${CHROOT_DIR} "umount /dev/pts"
+run_chroot_command ${CHROOT_DIR} "rm -rf /tmp/* ~/.bash_history"
+run_command "umount ${CHROOT_DIR}/dev"
+
+unset CHROOT_CLEANUP
+
+popd &> /dev/null
+

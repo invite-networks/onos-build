@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# These variables are the global settings, and will set any defaults they may not have been set in setting files 
+#
+
+# We need to have a GPG key
+if [[ -z ${GPG_KEY} ]]; then
+	echo "A GPG key must be specified"
+	exit 2
+fi
+
+# Default build name to use 
+: ${BUILD_NAME:='jessie'}
+
+# Author of the ISO
+: ${AUTHOR:='INVITE Networks'}
+
+# Version for ISO 
+: ${VERSION:='1'}
+
+# Where we build the new ISO
+BUILD_DIR="${PROJECT_DIR}/build" 
+
+# The filesystem of the ISO being built 
+CHROOT_DIR="${BUILD_DIR}/chroot"
+
+# The contents of the new ISO
+ISO_DIR="${BUILD_DIR}/iso" 
+
+# Temporary directory put on the filesystem, this is used for local packages to be installed or to copy files etc 
+IMPORT_DIR="${PROJECT_DIR}/import"
+
+# Cached directory 
+CACHE_DIR="${PROJECT_DIR}/.cache"
+
+# Plan directory that includes packages to install
+PLANS_DIR="${PROJECT_DIR}/plans"
+
+# Overlay directory
+OVERLAYS_DIR="${PROJECT_DIR}/overlays"
+
+# Commands directory
+COMMANDS_DIR="${PROJECT_DIR}/commands"
+
+# Information to build a repo
+REPO_DIR="${BUILD_DIR}/repo"
+
+# Bootstrap dir used to boot the ISO
+BOOTSTRAP_DIR="${PROJECT_DIR}/bootstrap"

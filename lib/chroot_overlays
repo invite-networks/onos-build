@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# This will copy the overlay files into the correct locations
+#
+
+if [[ -d ${OVERLAYS_DIR} ]]; then
+  pushd ${OVERLAYS_DIR} &> /dev/null
+
+  for DIR in $(ls); do
+
+    run_command "cp -r ${DIR} ${CHROOT_DIR}/."
+
+  done
+
+  popd &> /dev/null
+
+fi

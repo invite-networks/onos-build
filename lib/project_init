@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# This script will initilize the project
+#
+
+# Make the source directory if needed
+if [ ! -d ${SOURCE_DIR} ]; then
+  echo "Creating dir '${SOURCE_DIR}'"
+  mkdir ${SOURCE_DIR}
+fi
+
+# Make the build directory if needed
+if [ ! -d ${BUILD_DIR} ]; then
+  echo "Making dir '${BUILD_DIR}'"
+  mkdir ${BUILD_DIR}
+fi
+
+# Make the cache directory if needed
+if [ ! -d ${CACHE_DIR} ]; then
+  echo "Making dir '${CACHE_DIR}'"
+  mkdir ${CACHE_DIR}
+fi
+
+# Make the import directory if needed
+if [ ! -d ${IMPORT_DIR} ]; then
+  echo "Making dir '${IMPORT_DIR}'"
+  mkdir ${IMPORT_DIR}
+fi
+
+# Create the Filesystem if needed 
+if [ ! -d "${CACHE_DIR}/chroot" ]; then
+
+  pushd "${CACHE_DIR}" &>/dev/null
+
+  echo "Bulilding minimal filesystem.  This may take some time for '${BUILD_NAME}'"
+  run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building miniaml Filesystem"
+
+  popd &>/dev/null
+
+fi
+
+# Create the ISO base from the bootstrap 
+if [[ ! -d ${ISO_DIR} ]]; then
+  echo "Syncing bootstrap to '${ISO_DIR}'"
+  sudo rsync -aSH ${BOOTSTRAP_DIR}/ ${ISO_DIR}/
+fi
+
+# Copy the filesystem from cache into the build directory 
+if [[ ! -d ${CHROOT_DIR} ]]; then
+  echo "Initilizing the file system to ${CHROOT_DIR}"
+  run_command "rsync -aSH ${CACHE_DIR}/chroot/ ${CHROOT_DIR}/" 
+fi

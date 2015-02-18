@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# This will build the ISO
+#
+
+pushd ${BUILD_DIR} &>/dev/null
+
+chroot ${CHROOT_DIR} dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${ISO_DIR}/install/filesystem.manifest
+
+# Delete the old filesystem if it exists 
+if [[ -f ${ISO_DIR}/install/filesystem.squashfs ]]; then
+
+  run_command "${ISO_DIR}/install/filesystem.squashfs"
+
+fi
+
+run_command "mksquashfs 'chroot' iso/live/filesystem.squashfs -b 1048576"
+run_command "printf $(du -sx --block-size=1 'chroot' | cut -f1) | tee iso/live/filesystem.size && echo ''" "Create filesystem info ${ISO_DIR}/install/filesystem.size"
+
+pushd ${ISO_DIR} &>/dev/null
+
+run_command "rm -f md5sum.txt"
+run_command "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat | tee md5sum.txt"
+run_command "sudo genisoimage -D -r -V "${IMAGE_NAME}_${VERSION}" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${BUILD_DIR}/${IMAGE_NAME}_${VERSION}.iso ."
+
+popd &>/dev/null
+
+popd &>/dev/null
+
+echo "ISO created at ${BUILD_DIR}/${IMAGE_NAME}_${VERSION}.iso"

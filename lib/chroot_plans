@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# This will install and update packages in the chroot envrioment
+#
+
+# APT Update 
+run_chroot_command ${CHROOT_DIR} "apt-get update && apt-get -y upgrade" 
+
+# Install packages from plan directory
+if [[ -d ${PLANS_DIR} ]]; then
+  for FILE in $(ls ${PLANS_DIR}); do
+
+    set_ifs $'\n'
+
+    for PACKAGE in $(cat ${PLANS_DIR}/${FILE} | grep -v '^$\|^\s*\#'); do
+      if [[ -f ${IMPORT_DIR}/${PACKAGE} ]]; then 
+        echo "INSTALLING LOCAL ${PACKAGE}"
+
+        run_chroot_command ${CHROOT_DIR} "dpkg -i /import/${PACKAGE}"
+	run_chroot_command ${CHROOT_DIR} "apt-get install -f"
+
+      elif [[ -f "${IMPORT_DIR}/${PACKAGE}.deb" ]]; then
+	echo "INSTALLING LOCAL DEB ${PACKAGE}"
+
+	run_chroot_command ${CHROOT_DIR} "dpkg -i /import/${PACKAGE}.deb"
+	run_chroot_command ${CHROOT_DIR} "apt-get install -f"
+
+      else
+        echo "APT INSTALL ${PACKAGE}"
+			
+	run_chroot_command ${CHROOT_DIR} "apt-get install -y ${PACKAGE}"
+      fi
+
+    done
+
+    return_ifs 
+
+  done
+
+fi

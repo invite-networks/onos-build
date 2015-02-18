@@ -1,0 +1,257 @@
+#!/bin/bash
+#
+# This contains the common functions that are used
+# through the build process.  It also takes care of
+# cleaning up on errors
+#
+
+####################################################
+# Called on exit to be sure the enviroment is clean 
+# Globals:
+#   None 
+# Arguments:
+#   None  
+# Returns:
+#   None
+################################################### 
+function exit_clean {
+  echo "Cleanup has been initiated"
+
+  # Set the orginal IFS
+  return_ifs
+
+  # Clean up the chroot enviroment if needed
+  if [[ ! -z ${CHROOT_CLEANUP} ]]; then 
+    load_source "${BASE_DIR}/lib/chroot_clean"
+
+  fi
+
+}
+
+
+################################################## 
+# Checks the return status of commands
+# Globals:
+#   EXIT_FUNCTION: The function called for cleanup 
+# Arguments:
+#   exit_code: Exit code being checked
+#   description: Description of what was done while getting the exit code
+# Returns:
+#   None
+################################################## 
+function check_return {
+  local exit_code=$1
+  local description=$2
+
+  # Exit code that is not 0 fails 
+  if [ $1 -ne 0 ]; then
+    echo "FAIL: $2"
+
+    # If an exit function exists and ignore errors is not set run the exit function 
+    if [[ ! -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
+      IGNORE_ERRORS=1
+      ${EXIT_FUNCTION}
+      exit ${exit_code}
+
+    # If an exit function is not set and ignore errors is not flagged exit with the exit_code 
+    elif [[ -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
+        exit ${exit_code}
+
+    fi
+
+  else
+    echo "PASS: $2"
+
+  fi
+}
+
+
+################################################## 
+# Runs a command and checks the status 
+# Globals:
+#   None 
+# Arguments:
+#   cmd: Command to execute 
+#   description: Description of what this command is doing
+# Returns:
+#   None
+################################################## 
+function run_command {
+  local cmd=$1 
+  local description=$2
+
+  /bin/dash -c "${cmd}" 
+  local retval=$? 
+
+  if [[ -z ${description} ]]; then
+    check_return "${retval}" "${cmd}"
+ 
+  else
+    check_return "${retval}" "${description}" 
+
+  fi
+}
+
+
+################################################## 
+# Runs a command inside a chroot and checks the status 
+# Globals:
+#   None 
+# Arguments:
+#   chroot: Location of the chroot
+#   cmd: Command to execute 
+#   description: Description of what this command is doing
+# Returns:
+#   None
+################################################## 
+function run_chroot_command {
+  local chroot=$1
+  local cmd=$2
+  local description=$3
+
+  chroot ${chroot} /bin/dash -c "${cmd}" 
+  local retval=$?
+
+  if [[ -z ${description} ]]; then
+    check_return "${retval}" "${cmd}"
+
+  else
+    check_return "${retval}" "${description}"
+  
+  fi
+}
+
+
+################################################## 
+# Checks for root priviledges and exit without them 
+# Globals:
+#   None 
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################## 
+function check_root {
+
+  if [ $(whoami) != 'root' ]; then
+    echo "You must have root privilege to execute this script!"
+    exit 2
+
+  fi
+}
+
+
+################################################## 
+# Sets the IFS for the script 
+# Globals:
+#   IFS
+#   IFS_DEFAULT
+# Arguments:
+#   IFS: Value to change IFS to 
+# Returns:
+#   None
+################################################## 
+function set_ifs {
+
+  IFS=$1
+
+}
+
+
+################################################## 
+# Returns the IFS to default 
+# Globals:
+#   IFS
+# Arguments:
+#   None 
+# Returns:
+#   None
+################################################## 
+function return_ifs {
+
+  if [[ ! -z ${IFS_DEFAULT} ]]; then
+    IFS=${IFS_DEFAULT}
+    unset IFS_DEFAULT
+  fi
+
+}
+
+
+################################################## 
+# Loads a file using source if it exists 
+# Globals:
+#   None 
+# Arguments:
+#   file
+#   ignore_failure 
+# Returns:
+#   None
+################################################## 
+function load_source {
+  local file=$1
+  local ignore_failure=$2
+
+  if [[ -f $file ]]; then
+    source $file
+
+  else
+    if [[ -z $ignore_failure ]]; then 
+      echo "Could not read $file"
+      exit_clean 
+    fi
+  fi 
+  
+}
+
+################################################## 
+# Cleans the build enviroment 
+# Globals:
+#   None
+# Arguments:
+#   None 
+# Returns:
+#   None
+################################################## 
+function clean {
+
+  if [[ ! -z ${BUILD_DIR} ]]; then
+    echo "Reinitilizing the build directory"
+    rm -rf ${BUILD_DIR} && mkdir ${BUILD_DIR} 
+  fi
+
+}
+
+################################################## 
+# Cleans the cache 
+# Globals:
+#   None
+# Arguments:
+#   None 
+# Returns:
+#   None
+################################################## 
+function clean_all {
+
+  if [[ ! -z ${CACHE_DIR} ]]; then
+    echo "Reinitilizing the cache directory"
+    rm -rf ${CACHE_DIR} && mkdir ${CACHE_DIR}
+  fi
+
+}
+
+#
+# This build has several mount points that can causes
+# issues for us if they are not cleaned up.  The clean_exit 
+# function is called on any failure it will also be called
+# on ctrl-c to be sure we don't leave something that we shouldn't
+#
+
+# Check for root permissions
+check_root
+
+# Register the exit function for ctrl-c
+trap exit_clean INT
+
+# Register the exit function for errors
+EXIT_FUNCTION=exit_clean
+

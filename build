@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# This script is used to build an ISO from a project 
+#
+
+# Set the base directory variable 
+declare -r BASE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# Load the common library and setup the enviroment 
+source "${BASE_DIR}/lib/common" 
+
+# Check that we received a project to build
+if [[ -z $1 ]]; then
+	echo "You must specifiy a project to build!"
+	echo "  Ex. $0 projects/myproject"
+	exit 2;
+
+else
+	# Set the project directory based on the input
+	if [[ $1 =~ projects/ ]]; then
+		declare -r PROJECT=$(echo $1 | sed 's/\/$//g')
+		declare -r PROJECT_DIR="${BASE_DIR}/${PROJECT}"
+	else
+		declare -r PROJECT_DIR="${BASE_DIR}/projects/$1"
+	fi
+
+	# Check that the project directory exists
+	if [[ ! -d "${PROJECT_DIR}" ]]; then
+		echo "The project was not found in ${PROJECT_DIR}" 
+		exit 2;
+	fi
+fi
+
+# Check that the projects directory is with the build script 
+# We do this to be sure the script hasn't been moved so we don't cause any problems
+if [[ ! -d "${BASE_DIR}/projects" ]]; then
+	echo "We did not find a project directory with the build script!"
+	echo "Either create the projects directory, or move the script back to the original location"
+	exit 2	
+fi
+
+# Load the settings files
+load_source "${BASE_DIR}/settings"
+load_source "${PROJECT_DIR}/settings" '1'
+load_source "${BASE_DIR}/lib/global_settings"
+
+# Clean the build if it was flagged
+if [[ ${2} == 'clean' ]]; then 
+	# Clears our cache directories as well 
+	if [[ ${3} == 'all' ]]; then 
+		clean_all
+	fi
+
+	clean
+
+	exit
+fi
+
+# Initilize the project
+load_source "${BASE_DIR}/lib/project_init"
+
+# Setup the chroot enviroment
+load_source "${BASE_DIR}/lib/chroot_init"
+
+# Overlays
+load_source "${BASE_DIR}/lib/chroot_overlays"
+
+# Plans 
+load_source "${BASE_DIR}/lib/chroot_plans"
+
+# Commands
+load_source "${BASE_DIR}/lib/chroot_commands"
+
+# Clean up the chroot enviroment
+load_source "${BASE_DIR}/lib/chroot_clean"
+
+# Generate Packages Hash
+#load_source "${BASE_DIR}/lib/hash_packages"
+
+# Build the ISO
+load_source "${BASE_DIR}/lib/build_iso"
+
+

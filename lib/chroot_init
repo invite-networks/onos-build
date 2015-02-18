@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# This is the setup for the chroot enviroment
+#
+
+echo "Setting up chroot enviroment"
+pushd {$BUILD_DIR} &> /dev/null 
+
+# Flag we need to clean this up
+CHROOT_CLEANUP=1
+
+# DNS Support
+run_command "cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf"
+
+# Copy local packages into the chroot
+run_command "su - $(logname) -c 'gpg --export -a ${GPG_KEY} > /tmp/gpg.key'"
+run_command "mv /tmp/gpg.key ${IMPORT_DIR}/gpg.key"
+run_command "rm -f /tmp/gpg.key"
+run_command "cp -r ${IMPORT_DIR} ${CHROOT_DIR}/." "Copying import directory into chroot"
+
+# Mounts
+run_command "mount --bind /dev/ ${CHROOT_DIR}/dev"
+run_chroot_command ${CHROOT_DIR} "mount -t proc none /proc"
+run_chroot_command ${CHROOT_DIR} "mount -t sysfs none /sys"
+run_chroot_command ${CHROOT_DIR} "mount -t devpts none /dev/pts"
+
+# Variables
+run_chroot_command ${CHROOT_DIR} "export HOME=/root"
+run_chroot_command ${CHROOT_DIR} "export LC_ALL=C"
+run_chroot_command ${CHROOT_DIR} "dpkg-divert --local --rename --add /sbin/initctl"
+run_chroot_command ${CHROOT_DIR} "ln -s /bin/true /sbin/initctl"
+
+# Stop services from restarting on update or install
+run_chroot_command ${CHROOT_DIR} "echo '#!/bin/bash' > /usr/sbin/policy-rc.d" 
+run_chroot_command ${CHROOT_DIR} "echo 'exit 101' >> /usr/sbin/policy-rc.d"
+run_chroot_command ${CHROOT_DIR} "chmod +x /usr/sbin/policy-rc.d"
+
+# Locale
+#echo 'en' > ${ISO_DIR}/isolinux/lang 
+run_chroot_command ${CHROOT_DIR} "apt-get install -y locales"
+run_chroot_command ${CHROOT_DIR} "locale-gen en_US en_US.UTF-8"
+run_chroot_command ${CHROOT_DIR} "sed -i '/en_US.UTF-8/s/^#//' /etc/locale.gen"
+
+# Apt Updates
+run_chroot_command ${CHROOT_DIR} "apt-get update -y"
+run_chroot_command ${CHROOT_DIR} "apt-get upgrade -y"
+
+# Install the local GPG key 
+run_chroot_command ${CHROOT_DIR} "cat /import/gpg.key | apt-key add -"
+
+popd &> /dev/null
+

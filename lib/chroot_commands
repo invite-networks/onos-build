@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# This will run commands inside of the chroot enviroment 
+#
+
+if [[ -d ${COMMANDS_DIR} ]];then
+
+  for FILE in $(ls ${COMMANDS_DIR}); do
+
+    set_ifs $'\n'
+
+    for COMMAND in $(cat ${COMMANDS_DIR}/${FILE} | grep -v '^$\|^\s*\#'); do
+      run_chroot_command ${CHROOT_DIR} "${COMMAND}"
+
+    done
+	
+    return_ifs
+  
+  done
+
+fi
