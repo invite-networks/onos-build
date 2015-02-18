@@ -8,7 +8,7 @@ if [[ -d ${OVERLAYS_DIR} ]]; then
 
   for DIR in $(ls); do
 
-    run_command "cp -r ${DIR} ${CHROOT_DIR}/."
+    run_command "cp -r ${DIR} ${BUILD_DIR}/."
 
   done
 
