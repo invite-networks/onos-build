@@ -1,6 +1,8 @@
 .*
 !.gitignore
 !.gitsync
+bootstraps/*
+!bootstraps/.gitsync
 projects/*
 !projects/.gitsync
 settings
