@@ -6,8 +6,7 @@
 # Update all of the submodules
 pushd "${PROJECT_DIR}" &>/dev/null
 
-run_command "git submodule init"
-run_command "git submodule update"
+# Git update
 
 popd &>/dev/null
 
@@ -49,10 +48,9 @@ if [ ! -d "${CACHE_DIR}/chroot/etc" ]; then
 fi
 
 # Create the ISO base from the bootstrap 
-if [[ ! -d ${ISO_DIR} ]]; then
-  echo "Syncing bootstrap to '${ISO_DIR}'"
-  sudo rsync -aSH ${BOOTSTRAP_DIR}/ ${ISO_DIR}/
-fi
+rm -rf ${ISO_DIR}
+echo "Syncing bootstrap to '${ISO_DIR}'"
+sudo rsync -aSH ${BOOTSTRAP_DIR}/ ${ISO_DIR}/
 
 # Copy the filesystem from cache into the build directory 
 if [[ ! -d ${CHROOT_DIR} ]]; then
