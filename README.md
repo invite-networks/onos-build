@@ -3,7 +3,7 @@ This will build an installer ISO for the Open Network Operating System (ONOS)
 
 ## Summary
 
-This provides the ability to create and customize an Open Network Operating System (ONOS).  ONOS uses Debian as the starting point, and we need to build from a working Debian install.  Jessie RC1 is what ONOS is currently based of off, and will be updated as soon as Jessie is released.  The build system does not need to match the release of ONOS but it is recommended. 
+This provides the ability to create and customize an Open Network Operating System (ONOS).  ONOS uses Debian as the starting point, and we need to build from a working Debian install.  Jessie is what ONOS is currently based off of.  The build system does not need to match the release of ONOS but it is recommended. 
 
 ## Setup
 
