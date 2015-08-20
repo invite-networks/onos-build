@@ -14,7 +14,7 @@ This provides the ability to create and customize an Open Network Operating Syst
 apt-get install -y git autoconf dpkg-dev syslinux genisoimage make lsb-release ssh sudo fakechroot devscripts live-build automake kernel-package libtool libglib2.0-dev libboost-filesystem-dev libapt-pkg-dev flex bison libperl-dev libnfnetlink-dev
 ```
 
-3. Clone is repo and cd into the newly created dirctory 
+3. Clone this repo and cd into the newly created dirctory 
 
 ```
 git clone https://github.com/invite-networks/onos-build.git && cd onos-build
