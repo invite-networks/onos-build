@@ -46,4 +46,4 @@ COMMANDS_DIR="${PROJECT_DIR}/commands"
 REPO_DIR="${BUILD_DIR}/repo"
 
 # Bootstrap dir used to boot the ISO
-BOOTSTRAP_DIR="${BASE_DIR}/bootstrap"
+BOOTSTRAP_DIR="${BASE_DIR}/bootstraps"
