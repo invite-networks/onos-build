@@ -42,8 +42,8 @@ fi
 
 # Create the ISO base from the bootstrap 
 run_command "rm -rf ${ISO_DIR}"
-run_command "rsync -aSH ${BOOTSTRAP_DIR}/${BOOTSTRAP} ${ISO_DIR}/" "Syncing ${BOOTSTRAP_DIR}/${BOOTSTRAP} to '${ISO_DIR}'"
-run_command "rm -rf ${ISO_DIR}/.git
+run_command "rsync -aSH ${BOOTSTRAP_DIR}/${BOOTSTRAP} ${ISO_DIR}/" "Syncing ${BOOTSTRAP_DIR}/${BOOTSTRAP} to ${ISO_DIR}"
+run_command "rm -rf ${ISO_DIR}/.git"
 
 # Copy the filesystem from cache into the build directory 
 if [[ ! -d ${CHROOT_DIR} ]]; then
