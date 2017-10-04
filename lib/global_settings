@@ -4,13 +4,13 @@
 #
 
 # We need to have a GPG key
-if [[ -z ${GPG_KEY} ]]; then
-	echo "A GPG key must be specified"
-	exit 2
-fi
+#if [[ -z ${GPG_KEY} ]]; then
+#	echo "A GPG key must be specified"
+#	exit 2
+#fi
 
 # Default build name to use 
-: ${BUILD_NAME:='jessie'}
+: ${BUILD_NAME:='stretch'}
 
 # Author of the ISO
 : ${AUTHOR:='INVITE Networks'}
