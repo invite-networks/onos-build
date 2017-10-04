@@ -3,13 +3,6 @@
 # This script will initilize the project
 #
 
-# Update all of the submodules
-pushd "${PROJECT_DIR}" &>/dev/null
-
-# Git update
-
-popd &>/dev/null
-
 # Make the source directory if needed
 if [ ! -d ${SOURCE_DIR} ]; then
   echo "Creating dir '${SOURCE_DIR}'"
@@ -49,7 +42,7 @@ fi
 
 # Create the ISO base from the bootstrap 
 run_command "rm -rf ${ISO_DIR}"
-run_command "rsync -aSH ${BOOTSTRAP_DIR}/ ${ISO_DIR}/" "Syncing bootstrap to '${ISO_DIR}'"
+run_command "rsync -aSH ${BOOTSTRAP_DIR}/${BOOTSTRAP} ${ISO_DIR}/" "Syncing bootstrap to '${ISO_DIR}'"
 
 # Copy the filesystem from cache into the build directory 
 if [[ ! -d ${CHROOT_DIR} ]]; then
