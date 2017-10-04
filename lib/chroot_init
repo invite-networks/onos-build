@@ -12,9 +12,6 @@ CHROOT_CLEANUP=1
 # DNS Support
 run_command "cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf"
 
-# GPG Key
-# run_command "su - $(logname) -c 'gpg --export -a ${GPG_KEY} > ${IMPORT_DIR}/gpg.key'"
-
 # Copy local packages into the chroot
 run_command "cp -r ${IMPORT_DIR} ${CHROOT_DIR}/." "Copying import directory into chroot"
 
@@ -50,7 +47,8 @@ run_chroot_command ${CHROOT_DIR} "apt-get update -y"
 run_chroot_command ${CHROOT_DIR} "apt-get upgrade -y"
 
 # Install the local GPG key 
-run_chroot_command ${CHROOT_DIR} "cat /import/gpg.key | apt-key add -"
+# run_command "su - $(logname) -c 'gpg --export -a ${GPG_KEY} > ${IMPORT_DIR}/gpg.key'"
+# run_chroot_command ${CHROOT_DIR} "cat /import/gpg.key | apt-key add -"
 
 popd &> /dev/null
 
