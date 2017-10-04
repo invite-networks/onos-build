@@ -6,7 +6,7 @@
 pushd ${BUILD_DIR} &>/dev/null
 
 # Build the manifest
-run_chroot_command "${CHROOT_DIR}" "dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${ISO_DIR}/live/filesystem.manifest"
+run_chroot_command "${CHROOT_DIR}" "dpkg-query -W --showformat='${Package} ${Version}\n' > ${ISO_DIR}/live/filesystem.manifest"
 
 # Delete the old filesystem if it exists 
 if [[ -f ${ISO_DIR}/live/filesystem.squashfs ]]; then
