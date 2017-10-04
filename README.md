@@ -11,7 +11,7 @@ This provides the ability to create and customize an Open Network Operating Syst
 2. Install all of the packages needed to build and compile
 
 ```
-apt-get install -y git autoconf dpkg-dev syslinux genisoimage make lsb-release ssh sudo fakechroot devscripts live-build automake kernel-package libtool libglib2.0-dev libboost-filesystem-dev libapt-pkg-dev flex bison libperl-dev libnfnetlink-dev
+apt-get install -y git autoconf dpkg-dev syslinux genisoimage make lsb-release ssh sudo fakechroot devscripts live-build automake libtool libglib2.0-dev libboost-filesystem-dev libapt-pkg-dev flex bison squashfs-tools libperl-dev libnfnetlink-dev kernel-package
 ```
 
 3. Clone this repo and cd into the newly created dirctory 
