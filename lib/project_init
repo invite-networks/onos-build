@@ -41,7 +41,7 @@ if [ ! -d "${CACHE_DIR}/chroot/etc" ]; then
 
   echo "Bulilding minimal filesystem.  This may take some time for '${BUILD_NAME}'"
   run_command "rm -rf chroot"
-  run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building miniaml Filesystem"
+  run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building minimal Filesystem"
 
   popd &>/dev/null
 
