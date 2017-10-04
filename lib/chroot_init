@@ -10,7 +10,7 @@ pushd {$BUILD_DIR} &> /dev/null
 CHROOT_CLEANUP=1
 
 # DNS Support
-run_command "cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf"
+run_command "cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf" "Adding DNS support to ${CHROOT_DIR}/etc/resolv.conf"
 
 # Copy local packages into the chroot
 run_command "cp -r ${IMPORT_DIR} ${CHROOT_DIR}/." "Copying import directory into chroot"
