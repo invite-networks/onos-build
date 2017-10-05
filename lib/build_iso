@@ -30,3 +30,4 @@ run_command "sudo genisoimage -D -r -V "${IMAGE_NAME}_${VERSION}" -cache-inodes 
 popd &>/dev/null
 
 echo "ISO created at ${BUILD_DIR}/${IMAGE_NAME}_${VERSION}.iso"
+

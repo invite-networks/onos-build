@@ -261,4 +261,3 @@ trap exit_clean INT
 
 # Register the exit function for errors
 EXIT_FUNCTION=exit_clean
-

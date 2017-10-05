@@ -5,7 +5,7 @@
 
 # Make the source directory if needed
 if [ ! -d ${SOURCE_DIR} ]; then
-  echo "Creating dir '${SOURCE_DIR}'"
+  echo "Making dir '${SOURCE_DIR}'"
   mkdir ${SOURCE_DIR}
 fi
 
@@ -34,7 +34,7 @@ if [ ! -d "${CACHE_DIR}/chroot/etc" ]; then
 
   echo "Bulilding minimal filesystem.  This may take some time for '${BUILD_NAME}'"
   run_command "rm -rf chroot"
-  run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building minimal Filesystem"
+  run_command "debootstrap --arch=amd64 --variant=minbase ${BUILD_NAME} chroot" "Building minimal Filesystem from debootstrap"
 
   popd &>/dev/null
 
@@ -50,3 +50,4 @@ if [[ ! -d ${CHROOT_DIR} ]]; then
   echo "Initilizing the file system to ${CHROOT_DIR}"
   run_command "rsync -aSH ${CACHE_DIR}/chroot/ ${CHROOT_DIR}/" 
 fi
+

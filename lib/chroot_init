@@ -15,12 +15,6 @@ run_command "cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf" "Adding DNS supp
 # Copy local packages into the chroot
 run_command "cp -r ${IMPORT_DIR} ${CHROOT_DIR}/." "Copying import directory into chroot"
 
-# Enviromental Variables
-#run_command "echo 'export HOME=/root' >> ${CHROOT_DIR}/root/.profile"
-#run_command "echo 'export DEBIAN_FRONTEND=noninteractive' >> ${CHROOT_DIR}/root/.profile"
-#run_command "echo 'export DEBCONF_NONINTERACTIVE_SEEN=true'>> ${CHROOT_DIR}/root/.profile"
-#run_command "echo 'export LC_ALL=C LANGUAGE=C LANG=C' >> ${CHROOT_DIR}/root/.profile"
-
 # Mounts
 run_command "mount --bind /dev/ ${CHROOT_DIR}/dev"
 run_chroot_command ${CHROOT_DIR} "mount -t proc none /proc"

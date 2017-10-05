@@ -24,4 +24,3 @@ run_command "umount ${CHROOT_DIR}/dev"
 unset CHROOT_CLEANUP
 
 popd &> /dev/null
-
