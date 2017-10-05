@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# This script is used to install the OS to disk 
+#
+
+# Command line arguments
+# r = reboot on completion 
+while getopts ":r" opt; do
+  case $opt in
+    r) reboot=1
+    ;;
+  esac
+done
+
+# Set the base directory var 
+declare -r BASE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# Unload the floppy module to avoid errors
+modprobe -r floppy
+
+# Load the supporting scripts
+source "${BASE_DIR}/lib/common"
+
+# Check for root permissions
+check_root
+
+# Prepare the disk for the install
+source "${BASE_DIR}/lib/disk" 
+find_disks
+
+# Bootloader setup
+source "${BASE_DIR}/lib/boot"
+progress_bar 'Bootloader Setup' 'bootloader_setup' '/dev/sda'
+
+# Overlays
+source "${BASE_DIR}/lib/overlays"
+
+# Chroot Commands
+source "${BASE_DIR}/lib/commands"
+
+# Cleanup the enviroment 
+clean
+
+# Reboot
+if [[ ! -z $reboot ]]; then
+  dialog --infobox "Rebooting to complete installation" 3 60 ; 
+  sleep 3
+  $(shutdown -r now)
+
+else
+  dialog --title "Setup Complete" --yesno "Reboot to complete installation?" 3 60 ;
+
+fi

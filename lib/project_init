@@ -40,10 +40,16 @@ if [ ! -d "${CACHE_DIR}/chroot/etc" ]; then
 
 fi
 
-# Create the ISO base from the bootstrap 
+# Build the file structure for the ISO
 run_command "rm -rf ${ISO_DIR}"
-run_command "rsync -aSH ${BOOTSTRAP_DIR}/${BOOTSTRAP}/ ${ISO_DIR}/" "Syncing ${BOOTSTRAP_DIR}/${BOOTSTRAP} to ${ISO_DIR}"
-run_command "rm -rf ${ISO_DIR}/.git"
+run_command "mkdir -p ${ISO_DIR}/live"
+run_command "rsync -aSH ${ISO_BASE_DIR}/ ${ISO_DIR}" "Syncing ISO_BASE ${ISO_BASE_DIR} to ISO ${ISO_DIR}"
+
+# Copy the required files to boot the ISO
+run_command "cp /usr/lib/ISOLINUX/isolinux.bin  ${ISO_DIR}/isolinux/."
+run_command "cp /usr/lib/syslinux/modules/bios/*.c32 ${ISO_DIR}/isolinux/."
+#run_command "cp ${ISO_DIR}/isolinux/."
+
 
 # Copy the filesystem from cache into the build directory 
 if [[ ! -d ${CHROOT_DIR} ]]; then

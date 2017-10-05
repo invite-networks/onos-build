@@ -16,6 +16,7 @@ if [[ -f ${ISO_DIR}/live/filesystem.squashfs ]]; then
 
 fi
 
+# Create the squashfs 
 run_command "mksquashfs 'chroot' iso/live/filesystem.squashfs -b 1048576"
 run_command "printf $(du -sx --block-size=1 'chroot' | cut -f1) | tee iso/live/filesystem.size && echo ''" "Create filesystem info ${ISO_DIR}/live/filesystem.size"
 
@@ -23,9 +24,18 @@ popd &>/dev/null
 
 pushd ${ISO_DIR} &>/dev/null
 
+# Put the Kernel on Ram Disk on the live CD
+run_command "cp ${CHROOT_DIR}/initrd.img ${ISO_DIR}/live/initrd.img"
+run_command "cp ${CHROOT_DIR}/vmlinuz ${ISO_DIR}/live/vmlinuz"
+
+# Create the md5 hash
 run_command "rm -f md5sum.txt"
 run_command "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat | tee md5sum.txt"
+
+# Create the ISO
 run_command "sudo genisoimage -D -r -V "${IMAGE_NAME}_${VERSION}" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${BUILD_DIR}/${IMAGE_NAME}_${VERSION}.iso ."
+
+run_command "chmod 666 ${BUILD_DIR}/${IMAGE_NAME}_${VERSION}.iso"
 
 popd &>/dev/null
 

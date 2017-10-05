@@ -79,5 +79,3 @@ load_source "${BASE_DIR}/lib/chroot_clean"
 
 # Build the ISO
 load_source "${BASE_DIR}/lib/build_iso"
-
-

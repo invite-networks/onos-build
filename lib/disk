@@ -1,0 +1,298 @@
+#!/bin/bash
+#
+# This has all of the function needed to interact with the disk
+#
+
+################################################## 
+# Finds the disks for the file system and if they are paritioned 
+# Globals:
+#   None
+# Arguments:
+#   None 
+# Returns:
+#   None
+##################################################
+function find_disks {
+  set_ifs $'\n'
+  local disks=()
+  local selected=''
+
+  # Build an array of available disks 
+  for disk in $(cat /proc/partitions | grep [hs]da$ | awk '{print $4}'); do
+
+    # Check if the disk is big enough to install 
+    if [[ $(disk_size_check $disk) == 0 ]]; then
+      
+      # Check for existing partitions 
+      if [[ $(get_disk_partitions $disk) -gt 0 ]]; then
+        disks=("${disk}")
+        break
+
+      else 
+        disks+=("${disk}")
+
+      fi
+    fi
+  done
+
+  if [[ ${#disks[@]} > 1 ]]; then
+    echo "Select a Disk"
+    exit 2
+
+  elif [[ ${#disks[@]} == 1 ]]; then
+    selected=${disks[0]}
+
+  else
+    #dialog --title 'Disk Error' --msgbox '\nA disk meeting the minimum requirements was not found!\n' 7 80
+    echo "Disk Error"
+    exit 2
+
+  fi
+ 
+  # Delete the selected disk from the disks array
+  disks=(${disks[@]/$selected})
+
+  # Check for existing partitions
+  partition_check $selected 
+
+  # Partition init 
+  progress_bar "Partition Setup" partition_init 
+
+  # Setup fstab
+  fstab_init
+
+  return_ifs
+}
+
+
+################################################## 
+# Gives the end user the ability to select the boot disk 
+# Globals:
+#   None
+# Arguments:
+#   disks array
+# Returns:
+#   diskselected 
+##################################################
+function select_boot_disk {
+  local disks=("${@}")
+
+  #for disk in ${disks[@]}; do
+
+     
+ 
+  #done
+}
+
+
+################################################## 
+# Checks the disk meets the minimum requirements
+# Globals:
+#   None
+# Arguments:
+#   disk
+#   size
+# Returns:
+#   None
+##################################################
+function disk_size_check {
+  local disk=$1
+  local min_disk=7
+  local size=$(get_disk_size $disk)
+
+  if [[ ${size} -gt ${min_disk} ]]; then
+    echo 0
+  else
+    echo "$disk $min_disk $size" > '/tmp/test'
+    echo 1
+  fi  
+  
+}
+
+
+################################################## 
+# Checks the disk for existing partition and changes the setup prompts 
+# Globals:
+#   None
+# Arguments:
+#   disk
+#   size
+# Returns:
+#   None
+##################################################
+function partition_check {
+  local disk=$1
+  local partitions=$(get_disk_partitions $disk)
+
+  if [[ ${partitions} -gt 0 ]]; then
+    dialog --menu "Select an option:" 10 100 3 \
+      "Upgrade:" "Upgrade ONos" \
+      "Install:" "Install a new copy of ONos removing any existing configuration" 2>/tmp/.selection 
+  
+      input=$(cat /tmp/.selection)
+
+  else
+    input="Install"
+ 
+  fi
+
+  # If there is no input stop the install 
+  if [[ -z ${input} ]]; then
+    exit 2;
+  fi
+
+  #if [[ ${input} =~ [Ii]nstall ]]; then
+    partition_setup ${disk} ${size}
+
+  #else 
+ 
+  #fi
+}
+
+################################################## 
+# Setup the partitions 
+# Globals:
+#   None
+# Arguments:
+#   disk
+#   size
+# Returns:
+#   None
+##################################################
+function partition_setup {
+  local disk=$1
+  local size=$2
+
+  # Find the OS partition size
+  if [[ ${size} < 10 ]]; then
+    partition_size=2
+  
+  else
+    partition_size=$((${size} / 4))
+
+  fi
+
+  # Remove old LVM configuration 
+  for group in $(vgdisplay 2>/dev/null | grep "VG Name" | awk '{ print $3 }'); do
+    run_command "lvremove ${group} -f"
+    run_command "vgremove ${group} -f"
+  done
+
+  # Remove physical volumes from LVM
+  for pv in $(pvdisplay 2>/dev/null | grep "PV Name" | awk '{ print $3 }'); do
+    run_command "pvremove /dev/sda3 -f"
+  done
+
+  /sbin/sfdisk /dev/${disk} --force -uS &>> $LOG_FILE <<EOF
+2048,1048512,83,*
+1050560,2097024,82
+3147584,,8e;
+EOF
+
+  SWAP_PARTITION=$(fdisk -l  | grep ${disk} | grep swap  | awk '{print $1}')
+  local lvm_parition=$(fdisk -l  | grep ${disk} | grep LVM | awk '{print $1}')
+ 
+  run_command "pvcreate ${lvm_parition}" "Physical volume creation"
+  run_command "vgcreate vgonos ${lvm_parition}" "Virtual group creation"
+  run_command "lvcreate -n onos1 -L ${partition_size}G vgonos" "Logical volume creation 'os1'"
+  run_command "lvcreate -n onos2 -L ${partition_size}G vgonos" "Logical volume creation 'os2'"
+  run_command "lvcreate -n common -l 100%FREE vgonos" "Logical volume creation 'common'"
+  run_command "mkfs.ext4 -F -m 0 /dev/vgonos/onos1" "EXT4 /dev/vgonos/onos1"
+  run_command "mkfs.ext4 -F -m 0 /dev/vgonos/onos2" "EXT4 /dev/vgonos/onos2"
+  run_command "mkfs.ext4 -F -m 0 /dev/vgonos/common" "EXT4 /dev/vgonos/common"
+  run_command "mkfs.ext4 -F -m 0 /dev/${disk}1" "EXT4 /dev/${disk}1" 
+
+}
+
+################################################## 
+# Initilize the partitions 
+# Globals:
+#   None
+# Arguments:
+#   disk
+#   size
+# Returns:
+#   None
+##################################################
+function partition_init {
+  local disk=$1
+
+  # Initilize the progress bar
+  progress_bar_init $BASH_SOURCE $FUNCNAME 
+
+  # Swap partitions
+  run_command "mkswap ${SWAP_PARTITION}" "Make swap" 
+  run_command "swapon ${SWAP_PARTITION}" "Enable swap"
+  log_message "$(free)"
+
+  # Install Partition 
+  run_command "mkdir -p ${CHROOT_DIR}"
+  run_command "mount /dev/vgonos/onos1 ${CHROOT_DIR}"
+  run_command "rm -rf ${CHROOT_DIR}/lost+found"
+
+  # Boot Partition 
+  run_command "mkdir -p ${CHROOT_DIR}/boot"
+  run_command "mount /dev/sda1 ${CHROOT_DIR}/boot"
+  run_command "rm -rf ${CHROOT_DIR}/boot/lost+found"
+
+  # Common Partition
+  run_command "mkdir -p ${CHROOT_DIR}/opt"
+  run_command "mount /dev/vgonos/common ${CHROOT_DIR}/opt"
+  run_command "rm -rf ${CHROOT_DIR}/opt/lost+found"
+
+  # Extract the filesystem
+  run_command "unsquashfs -d ${CHROOT_DIR} -f /lib/live/mount/medium/live/filesystem.squashfs" "Extracting filesystem"
+
+}
+
+################################################## 
+# Initilize the FStab 
+# Globals:
+#   None
+# Arguments:
+#   disk
+#   size
+# Returns:
+#   None
+##################################################
+function fstab_init {
+
+  run_chroot_command ${CHROOT_DIR} "echo '$(blkid /dev/mapper/vgonos-onos1 | awk '{print $2}') / ext4 errors=remount-ro 0 1' > /etc/fstab"
+  run_chroot_command ${CHROOT_DIR} "echo '$(blkid /dev/mapper/vgonos-common | awk '{print $2}') /opt ext4 errors=remount-ro 0 1' >> /etc/fstab"
+  run_chroot_command ${CHROOT_DIR} "echo '$(blkid /dev/sda1 | awk '{print $2}') /boot ext4 errors=remount-ro 0 1' >> /etc/fstab"
+  run_chroot_command ${CHROOT_DIR} "echo '$(blkid /dev/sda2 | awk '{print $2}') none swap sw 0 0' >> /etc/fstab"
+
+}
+
+################################################## 
+# Returns the size of a disk 
+# Globals:
+#   None
+# Arguments:
+#   disk
+# Returns:
+#   size 
+##################################################
+function get_disk_size {
+  disk=$1
+
+  local raw="$(cat /proc/partitions | grep ${disk}$ | awk '{print $3}')"
+  echo $(($raw / 1024000))
+
+}
+
+################################################## 
+# Returns the number of partitions on a disk 
+# Globals:
+#   None
+# Arguments:
+#   disk
+# Returns:
+#   partitions
+##################################################
+function get_disk_partitions {
+  disk=$1
+ 
+  echo $(cat /proc/partitions | grep ${disk}[0-9] | wc -l)
+
+}
