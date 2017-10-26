@@ -15,17 +15,17 @@
 #   None
 ################################################### 
 function exit_clean {
-  echo "Cleanup has been initiated"
-
-  # Set the orginal IFS
-  return_ifs
-
-  # Clean up the chroot enviroment if needed
-  if [[ ${CHROOT_CLEANUP} == 1 ]]; then
-    load_source "${BASE_DIR}/lib/chroot_clean"
-
-  fi
-
+    echo "Cleanup has been initiated"
+    
+    # Set the orginal IFS
+    return_ifs
+    
+    # Clean up the chroot enviroment if needed
+    if [[ ${CHROOT_CLEANUP} == 1 ]]; then
+        load_source "${BASE_DIR}/lib/chroot_clean"
+    
+    fi
+    
 }
 
 
@@ -40,29 +40,29 @@ function exit_clean {
 #   None
 ################################################## 
 function check_return {
-  local exit_code=$1
-  local description=$2
-
-  # Exit code that is not 0 fails 
-  if [ $exit_code -ne 0 ]; then
-    echo "FAIL: $2"
-
-    # If an exit function exists and ignore errors is not set run the exit function 
-    if [[ ! -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
-      IGNORE_ERRORS=1
-      ${EXIT_FUNCTION}
-      exit ${exit_code}
-
-    # If an exit function is not set and ignore errors is not flagged exit with the exit_code 
-    elif [[ -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
-        exit ${exit_code}
-
+    local exit_code=$1
+    local description=$2
+    
+    # Exit code that is not 0 fails 
+    if [ $exit_code -ne 0 ]; then
+        echo "FAIL: $2"
+    
+        # If an exit function exists and ignore errors is not set run the exit function 
+        if [[ ! -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
+            IGNORE_ERRORS=1
+            ${EXIT_FUNCTION}
+            exit ${exit_code}
+    
+        # If an exit function is not set and ignore errors is not flagged exit with the exit_code 
+        elif [[ -z ${EXIT_FUNCTION} && -z ${IGNORE_ERRORS} ]]; then
+            exit ${exit_code}
+    
+        fi
+    
+    else
+        echo "PASS: $2"
+    
     fi
-
-  else
-    echo "PASS: $2"
-
-  fi
 }
 
 
@@ -77,19 +77,19 @@ function check_return {
 #   None
 ################################################## 
 function run_command {
-  local cmd=$1 
-  local description=$2
-
-  /bin/dash -c "${cmd}" 
-  local retval=$? 
-
-  if [[ -z ${description} ]]; then
-    check_return "${retval}" "${cmd}"
- 
-  else
-    check_return "${retval}" "${description}" 
-
-  fi
+    local cmd=$1 
+    local description=$2
+    
+    /bin/dash -c "${cmd}" 
+    local retval=$? 
+    
+    if [[ -z ${description} ]]; then
+        check_return "${retval}" "${cmd}"
+    
+    else
+        check_return "${retval}" "${description}" 
+    
+    fi
 }
 
 
@@ -105,27 +105,27 @@ function run_command {
 #   None
 ################################################## 
 function run_chroot_command {
-  local chroot=$1
-  local cmd=$2
-  local description=$3
-
-  chroot ${chroot} /usr/bin/env \
-    HOME="/root" \
-    DEBIAN_FRONTEND="noninteractive" \
-    DEBCONF_NONINTERACTIVE_SEEN="true" \
-    LC_ALL="C" \
-    LANGUAGE="C" \
-    LANG="C" \
-    /bin/dash -c "${cmd}" 
-  local retval=$?
-
-  if [[ -z ${description} ]]; then
-    check_return "${retval}" "${cmd}"
-
-  else
-    check_return "${retval}" "${description}"
-  
-  fi
+    local chroot=$1
+    local cmd=$2
+    local description=$3
+    
+    chroot ${chroot} /usr/bin/env \
+        HOME="/root" \
+        DEBIAN_FRONTEND="noninteractive" \
+        DEBCONF_NONINTERACTIVE_SEEN="true" \
+        LC_ALL="C" \
+        LANGUAGE="C" \
+        LANG="C" \
+        /bin/dash -c "${cmd}" 
+    local retval=$?
+    
+    if [[ -z ${description} ]]; then
+        check_return "${retval}" "${cmd}"
+    
+    else
+        check_return "${retval}" "${description}"
+    
+    fi
 }
 
 
@@ -139,12 +139,12 @@ function run_chroot_command {
 #   None
 ################################################## 
 function check_root {
-
-  if [ $(whoami) != 'root' ]; then
-    echo "You must have root privilege to execute this script!"
-    exit 2
-
-  fi
+    
+    if [ $(whoami) != 'root' ]; then
+        echo "You must have root privilege to execute this script!"
+        exit 2
+        
+    fi
 }
 
 
@@ -159,9 +159,9 @@ function check_root {
 #   None
 ################################################## 
 function set_ifs {
-
-  IFS=$1
-
+    
+    IFS=$1
+    
 }
 
 
@@ -175,12 +175,12 @@ function set_ifs {
 #   None
 ################################################## 
 function return_ifs {
-
-  if [[ ! -z ${IFS_DEFAULT} ]]; then
-    IFS=${IFS_DEFAULT}
-    unset IFS_DEFAULT
-  fi
-
+    
+    if [[ ! -z ${IFS_DEFAULT} ]]; then
+        IFS=${IFS_DEFAULT}
+        unset IFS_DEFAULT
+    fi
+    
 }
 
 
@@ -195,19 +195,19 @@ function return_ifs {
 #   None
 ################################################## 
 function load_source {
-  local file=$1
-  local ignore_failure=$2
-
-  if [[ -f $file ]]; then
-    source $file
-
-  else
-    if [[ -z $ignore_failure ]]; then 
-      echo "Could not read $file"
-      exit_clean 
-    fi
-  fi 
-  
+    local file=$1
+    local ignore_failure=$2
+    
+    if [[ -f $file ]]; then
+        source $file
+    
+    else
+        if [[ -z $ignore_failure ]]; then 
+          echo "Could not read $file"
+          exit_clean 
+        fi
+    fi 
+    
 }
 
 ####################################################
@@ -222,12 +222,12 @@ function load_source {
 #   None
 ################################################### 
 function move_and_link {
-	local orig_file=$1;
-	local dest_file=$2;
-
-	run_command "rsync -a -L ${orig_file} ${dest_file}";
-	run_command "ln ${orig_file} ${dest_file}";
-	
+    local orig_file=$1;
+    local dest_file=$2;
+    
+    run_command "rsync -a -L ${orig_file} ${dest_file}";
+    run_command "ln ${orig_file} ${dest_file}";
+    
 }
 
 ################################################## 
@@ -240,12 +240,12 @@ function move_and_link {
 #   None
 ################################################## 
 function clean {
-
-  if [[ ! -z ${BUILD_DIR} ]]; then
-    echo "Reinitilizing the build directory"
-    rm -rf ${BUILD_DIR} && mkdir ${BUILD_DIR} 
-  fi
-
+    
+    if [[ ! -z ${BUILD_DIR} ]]; then
+        echo "Reinitilizing the build directory"
+        rm -rf ${BUILD_DIR} && mkdir ${BUILD_DIR} 
+    fi
+    
 }
 
 ################################################## 
@@ -258,12 +258,12 @@ function clean {
 #   None
 ################################################## 
 function clean_all {
-
-  if [[ ! -z ${CACHE_DIR} ]]; then
-    echo "Reinitilizing the cache directory"
-    rm -rf ${CACHE_DIR} && mkdir ${CACHE_DIR}
-  fi
-
+    
+    if [[ ! -z ${CACHE_DIR} ]]; then
+        echo "Reinitilizing the cache directory"
+        rm -rf ${CACHE_DIR} && mkdir ${CACHE_DIR}
+    fi
+    
 }
 
 #
