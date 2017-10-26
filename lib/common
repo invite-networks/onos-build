@@ -231,7 +231,7 @@ function move_and_link {
         mkdir -p ${dest_dir}
     done;
     
-	if [ ! -f ${dest_file} ]; then
+    if [ ! -f ${dest_file} ]; then
         run_command "rsync -a -L ${orig_file} ${dest_file}";
     done;
     
