@@ -210,6 +210,26 @@ function load_source {
   
 }
 
+####################################################
+# Used to move a file to a new location and link the
+# original location to the new file.
+# Globals:
+#   None 
+# Arguments:
+#   orig_file: File to be moved
+#	dest_file: New location of the file
+# Returns:
+#   None
+################################################### 
+function move_and_link {
+	local orig_file=$1;
+	local dest_file=$2;
+
+	run_command "rsync -a -L ${orig_file} ${dest_file}";
+	run_command "ln ${orig_file} ${dest_file}";
+	
+}
+
 ################################################## 
 # Cleans the build enviroment 
 # Globals:
@@ -254,10 +274,10 @@ function clean_all {
 #
 
 # Check for root permissions
-check_root
+# check_root
 
 # Register the exit function for ctrl-c
-trap exit_clean INT
+# trap exit_clean INT
 
 # Register the exit function for errors
-EXIT_FUNCTION=exit_clean
+# EXIT_FUNCTION=exit_clean
