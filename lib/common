@@ -227,7 +227,7 @@ function move_and_link {
     
     run_command "rsync -a -L ${orig_file} ${dest_file}";
     run_command "rm -rf ${orig_file}";
-    run_command "ln ${orig_file} ${dest_file}";
+    run_command "ln ${dest_file} ${orig_file}";
     
 }
 
